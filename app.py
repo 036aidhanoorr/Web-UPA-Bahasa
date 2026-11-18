@@ -1027,15 +1027,15 @@ elif st.session_state["active_tab"] == "clustering":
             )
 
 # ==========================================
-# HALAMAN 8: INTERPRETASI HASIL (REVISI BERDASARKAN FREKUENSI & SPESIFIK MITRA)
+# HALAMAN 8: INTERPRETASI HASIL (REVISI LENGKAP D3/D4 & SUBTES PER PRODI)
 # ==========================================
 elif st.session_state["active_tab"] == "interpretasi":
     st.markdown(
         """
         <div class="page-header-box">
-            <span class="folder-tag">TAHAP 08 • ANALISIS FREKUENSI & HIPOTESA MITRA (UPA BAHASA)</span>
+            <span class="folder-tag">TAHAP 08 • ANALISIS FREKUENSI, JENJANG D3/D4 & SEBARAN PRODI</span>
             <h2 class="section-heading">Interpretasi Hasil Klasterisasi Berbasis Frekuensi & Sebaran Spesifik</h2>
-            <p class="section-desc">Analisis profil mendalam menggunakan frekuensi (modus) subtes terlemah, identifikasi prodi paling rentan, serta landasan hipotesis untuk diskusi kebijakan intervensi bersama mitra UPA Bahasa.</p>
+            <p class="section-desc">Analisis profil mendalam menggunakan frekuensi subtes terlemah, perbandingan proporsi jenjang D3 vs D4, rentang skor statistik, serta matriks kerentanan subtes per program studi.</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -1078,13 +1078,21 @@ elif st.session_state["active_tab"] == "interpretasi":
                 lambda x: f"Tier {x}"
             )
 
-            # Tentukan subtes terlemah per mahasiswa berdasarkan nilai terkecil dari S1, S2, S3
+            # Tentukan subtes terlemah per mahasiswa
             subtes_cols = ["Section 1", "Section 2", "Section 3"]
             df_clean["Subtes_Terlemah_Mhs"] = df_clean[subtes_cols].idxmin(axis=1)
 
+            # Deteksi Jenjang (D3 vs D4) dari kolom Prodi jika tersedia
+            if "Prodi" in df_clean.columns:
+                df_clean["Jenjang"] = df_clean["Prodi"].apply(
+                    lambda x: "D3" if str(x).strip().upper().startswith("D3") else ("D4" if str(x).strip().upper().startswith("D4") else "Lainnya")
+                )
+            else:
+                df_clean["Jenjang"] = "Tidak Diketahui"
+
             dak_tier_list = [f"Tier {i+1}" for i in range(optimal_k)]
             pilih_tier_tampil = st.selectbox(
-                "Pilih Tier untuk Menganalisis Frekuensi Subtes Terlemah & Sebaran Spesifik Prodi:",
+                "Pilih Tier untuk Menganalisis Frekuensi Subtes Terlemah, Jenjang D3/D4 & Sebaran Prodi:",
                 dak_tier_list,
             )
 
@@ -1095,25 +1103,42 @@ elif st.session_state["active_tab"] == "interpretasi":
             if not df_filtered_tier.empty:
                 total_mhs_tier = len(df_filtered_tier)
                 
-                # Hitung frekuensi (jumlah mahasiswa) yang paling lemah di tiap subtes
+                # Frekuensi subtes terlemah
                 freq_subtes = df_filtered_tier["Subtes_Terlemah_Mhs"].value_counts()
                 subtes_paling_sering_jeblok = freq_subtes.idxmax() if not freq_subtes.empty else "-"
                 jumlah_jeblok_tertinggi = freq_subtes.max() if not freq_subtes.empty else 0
                 pct_jeblok_tertinggi = (jumlah_jeblok_tertinggi / total_mhs_tier) * 100
 
-                # Cari Prodi dengan kontribusi terbanyak di tier ini
+                # Prodi terbanyak
                 prodi_terbanyak = df_filtered_tier["Prodi"].value_counts()
                 prodi_paling_rentan = prodi_terbanyak.idxmax() if not prodi_terbanyak.empty else "-"
                 jml_prodi_rentan = prodi_terbanyak.max() if not prodi_terbanyak.empty else 0
 
+                # Proporsi Jenjang D3 vs D4
+                jenjang_counts = df_filtered_tier["Jenjang"].value_counts()
+                d3_count = jenjang_counts.get("D3", 0)
+                d4_count = jenjang_counts.get("D4", 0)
+                d3_pct = (d3_count / total_mhs_tier) * 100
+                d4_pct = (d4_count / total_mhs_tier) * 100
+
+                # Statistik skor
+                min_total = df_filtered_tier["Total"].min()
+                max_total = df_filtered_tier["Total"].max()
+                mean_total = df_filtered_tier["Total"].mean()
+                
+                tahun_dominan = df_filtered_tier["Tahun_Tes"].mode()[0] if "Tahun_Tes" in df_filtered_tier.columns and not df_filtered_tier["Tahun_Tes"].mode().empty else "-"
+
                 st.markdown(
                     f"""
                     <div class="paper-card">
-                        <h4>🔍 Analisis Berbasis Frekuensi & Karakteristik Spesifik ({pilih_tier_tampil})</h4>
+                        <h4>Analisis Mendalam Berbasis Frekuensi, Jenjang D3/D4 & Karakteristik Spesifik ({pilih_tier_tampil})</h4>
                         <ul>
-                            <li><b>Total Anggota:</b> {total_mhs_tier} mahasiswa ({total_mhs_tier/len(df_clean)*100:.1f}% dari populasi total).</li>
-                            <li><b>Subtes Paling Sering Jeblok (Frekuensi Tertinggi):</b> Berdasarkan pemetaan individu, sebanyak <b>{jumlah_jeblok_tertinggi} mahasiswa ({pct_jeblok_tertinggi:.1f}%)</b> di {pilih_tier_tampil} paling sering mencatatkan skor terendah pada <b>{subtes_paling_sering_jeblok}</b>.</li>
-                            <li><b>Program Studi Paling Mendominasi / Rentan:</b> Program Studi <b>{prodi_paling_rentan}</b> mencatatkan jumlah terbanyak di {pilih_tier_tampil} yakni sebanyak <b>{jml_prodi_rentan} mahasiswa</b>.</li>
+                            <li><b>Total Anggota Populasi Tier:</b> {total_mhs_tier} mahasiswa ({total_mhs_tier/len(df_clean)*100:.1f}% dari total keseluruhan mahasiswa).</li>
+                            <li><b>Proporsi Jenjang Pendidikan (D3 vs D4):</b> Terdiri atas <b>{d3_count} mahasiswa D3 ({d3_pct:.1f}%)</b> dan <b>{d4_count} mahasiswa D4 ({d4_pct:.1f}%)</b>.</li>
+                            <li><b>Subtes Paling Sering Jeblok (Modus Frekuensi):</b> Sebanyak <b>{jumlah_jeblok_tertinggi} mahasiswa ({pct_jeblok_tertinggi:.1f}%)</b> di {pilih_tier_tampil} paling sering mencatatkan skor terendah pada modul <b>{subtes_paling_sering_jeblok}</b>.</li>
+                            <li><b>Program Studi Paling Rentan / Mendominasi:</b> Program Studi <b>{prodi_paling_rentan}</b> mencatatkan konsentrasi terbanyak di tier ini dengan jumlah <b>{jml_prodi_rentan} mahasiswa</b>.</li>
+                            <li><b>Rentang & Rata-Rata Skor Komposit:</b> Skor total pada tier ini berkisar antara <b>{min_total} hingga {max_total}</b> dengan rata-rata komposit sebesar <b>{mean_total:.1f}</b>.</li>
+                            <li><b>Dominasi Tahun Pelaksanaan Tes:</b> Sebagian besar rekaman data pada tier ini berasal dari tahun pelaksanaan <b>{tahun_dominan}</b>.</li>
                         </ul>
                     </div>
                     """,
@@ -1125,7 +1150,7 @@ elif st.session_state["active_tab"] == "interpretasi":
                 col_f1, col_f2 = st.columns(2)
                 
                 with col_f1:
-                    st.subheader(f"Grafik Frekuensi Jumlah Mahasiswa Berdasarkan Subtes Terlemah di {pilih_tier_tampil}")
+                    st.subheader(f"Grafik Frekuensi Mahasiswa Berdasarkan Subtes Terlemah di {pilih_tier_tampil}")
                     st.markdown("Menggambarkan seberapa sering mahasiswa pada tier ini jatuh pada modul subtes tertentu:")
                     
                     df_freq_chart = freq_subtes.reset_index()
@@ -1155,7 +1180,7 @@ elif st.session_state["active_tab"] == "interpretasi":
 
                 with col_f2:
                     st.subheader(f"Top Program Studi Penyumbang Terbanyak di {pilih_tier_tampil}")
-                    st.markdown("Mengetahui prodi mana saja yang paling banyak masuk ke dalam tier ini untuk rekomendasi mitra:")
+                    st.markdown("Mengetahui prodi mana saja yang paling banyak masuk ke dalam tier ini:")
                     
                     df_prodi_top = prodi_terbanyak.head(7).reset_index()
                     df_prodi_top.columns = ["Program Studi", "Jumlah Mahasiswa"]
@@ -1179,38 +1204,53 @@ elif st.session_state["active_tab"] == "interpretasi":
                     st.plotly_chart(fig_prodi, use_container_width=True)
 
                 st.markdown("---")
-                st.subheader(f"💡 Formulasi Hipotesis untuk Diskusi Bersama Mitra (UPA Bahasa POLNES)")
-                
-                # Formulasi hipotesis otomatis yang spesifik berdasarkan data
-                if pilih_tier_tampil == "Tier 1":
-                    hipotesis_text = (
-                        f"<b>Hipotesis Intervensi Mitra:</b> Karena mayoritas mahasiswa di Tier 1 ({pct_jeblok_tertinggi:.1f}%) paling sering mengalami kelemahan pada <b>{subtes_paling_sering_jeblok}</b> dan konsentrasi terbesar berasal dari prodi <b>{prodi_paling_rentan}</b>, "
-                        f"maka UPA Bahasa dapat mengambil langkah strategis berupa <i>workshop</i> atau modul pelatihan intensif fokus-modul sebelum ujian ulang, dengan prioritas pemanggilan peserta berdasarkan asal Program Studi yang paling rentan."
-                    )
-                elif pilih_tier_tampil == f"Tier {optimal_k}":
-                    hipotesis_text = (
-                        f"<b>Hipotesis Kebijakan Mitra:</b> Kelompok pada {pilih_tier_tampil} menunjukkan penguasaan komposit yang sangat baik. "
-                        f"Mitra dapat memposisikan kelompok ini sebagai kandidat <i>peer tutor</i> atau mahasiswa yang siap disertifikasi kejenjang bahasa internasional yang lebih tinggi."
-                    )
-                else:
-                    hipotesis_text = (
-                        f"<b>Hipotesis Tindak Lanjut Mitra:</b> Pada {pilih_tier_tampil} (level menengah), tantangan utamanya adalah mengatasi gap pada <b>{subtes_paling_sering_jeblok}</b>. "
-                        f"Langkah mitigasi mitra dapat berupa penyediaan fasilitas *self-learning module* mandiri berbasis online yang berfokus spesifik pada subtes tersebut."
+                st.subheader(f"Analisis Kerentanan Subtes Per Program Studi di {pilih_tier_tampil}")
+                st.markdown("Matriks perbandingan mendalam untuk melihat subtes mana yang paling sering anjlok pada masing-masing Program Studi:")
+
+                if "Prodi" in df_filtered_tier.columns:
+                    df_validasi_prodi = (
+                        df_filtered_tier.groupby(["Prodi", "Subtes_Terlemah_Mhs"])
+                        .size()
+                        .reset_index(name="Jumlah_Mahasiswa")
                     )
 
-                st.markdown(
-                    f"""
-                    <div class="paper-card-accent">
-                        <h4>Rumusan Hipotesis Penelitian & Aksi Mitra:</h4>
-                        <p style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 0;">{hipotesis_text}</p>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
+                    top_prodi_tier = (
+                        df_filtered_tier["Prodi"].value_counts().head(10).index
+                    )
+                    df_validasi_top = df_validasi_prodi[
+                        df_validasi_prodi["Prodi"].isin(top_prodi_tier)
+                    ]
 
-                st.markdown("<br>", unsafe_allow_html=True)
+                    fig_val_prodi = px.bar(
+                        df_validasi_top,
+                        x="Jumlah_Mahasiswa",
+                        y="Prodi",
+                        color="Subtes_Terlemah_Mhs",
+                        barmode="group",
+                        orientation="h",
+                        text="Jumlah_Mahasiswa",
+                        color_discrete_map={
+                            "Section 1": "#10C35D",
+                            "Section 2": "#3A86FF",
+                            "Section 3": "#FF8A4C",
+                        },
+                        labels={
+                            "Jumlah_Mahasiswa": "Jumlah Mahasiswa",
+                            "Prodi": "Program Studi",
+                            "Subtes_Terlemah_Mhs": "Subtes Paling Lemah",
+                        },
+                        height=480,
+                    )
+                    fig_val_prodi.update_traces(textposition="outside")
+                    fig_val_prodi.update_layout(
+                        paper_bgcolor="#FFFFFF",
+                        plot_bgcolor="#F8FAFC",
+                        font=dict(color="#0A3D2E"),
+                    )
+                    st.plotly_chart(fig_val_prodi, use_container_width=True)
+
                 st.subheader(f"Daftar Mahasiswa Anggota {pilih_tier_tampil} (Tabel Detail)")
                 st.dataframe(
-                    df_filtered_tier[kolom_identitas + kolom_fitur + ["Subtes_Terlemah_Mhs", "PC1", "Level_Tier"]],
+                    df_filtered_tier[kolom_identitas + ["Jenjang"] + kolom_fitur + ["Subtes_Terlemah_Mhs", "PC1", "Level_Tier"]],
                     use_container_width=True,
                 )
