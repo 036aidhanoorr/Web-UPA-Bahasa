@@ -111,14 +111,12 @@ def hitung_evaluasi_full(_X_scaled_tuple):
 # FUNGSI AMAN PENCARIAN TITIK SIKU ELBOW
 # ==========================================
 def find_optimal_k(k_list, inertia_list):
-    # Menggunakan jarak garis lurus biasa (Pythagoras) yang aman dari error numpy version
     p1 = np.array([k_list[0], inertia_list[0]])
     p2 = np.array([k_list[-1], inertia_list[-1]])
     
     distances = []
     for k, val in zip(k_list, inertia_list):
         p0 = np.array([k, val])
-        # Rumus jarak titik ke garis lurus (jarak tegak lurus) secara aman
         n = np.abs((p2[1] - p1[1]) * p0[0] - (p2[0] - p1[0]) * p0[1] + p2[0] * p1[1] - p2[1] * p1[0])
         d = np.sqrt((p2[1] - p1[1])**2 + (p2[0] - p1[0])**2)
         dist = n / d if d != 0 else 0
@@ -839,7 +837,21 @@ elif st.session_state["active_tab"] == "evaluasi":
                 st.plotly_chart(fig_elbow, use_container_width=True)
 
             with col_ev2:
-                st.markdown("<br>", unsafe_allow_html=True)
+                st.subheader("Ringkasan Hasil Evaluasi Elbow")
+                st.markdown(
+                    f"""
+                    <div class="paper-card">
+                        <h4>Catatan Analisis:</h4>
+                        <ul>
+                            <li><b>Metode Elbow:</b> Titik siku optimal tercatat pada <b>K = {optimal_k}</b>.</li>
+                            <li><b>Silhouette Analysis:</b> Digunakan untuk menguji seberapa baik tingkat pemisahan antar klaster pada kandidat K = 2, 3, dan 4 di sebelah bawah.</li>
+                        </ul>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+            st.markdown("<br>", unsafe_allow_html=True)
             st.subheader("Perbandingan Silhouette Plot untuk Kandidat Nilai K (K = 2, 3, 4)")
             st.markdown("Berikut adalah sebaran Silhouette Plot secara berdampingan untuk mengevaluasi kualitas pemisahan klaster pada $K = 2$, $K = 3$, dan $K = 4$:")
 
@@ -891,50 +903,7 @@ elif st.session_state["active_tab"] == "evaluasi":
                 with cols_list[idx]:
                     st.pyplot(fig)
 
-                cluster_labels = sil_scores_dict[pilih_k_interaktif]["labels"]
-                silhouette_vals = sil_scores_dict[pilih_k_interaktif]["vals"]
-                avg_silhouette = sil_scores_dict[pilih_k_interaktif]["score"]
-
-                fig, ax = plt.subplots(figsize=(6, 4))
-                y_lower = 10
-                colors = ["#3B82F6", "#F97316", "#10C35D", "#B197FC", "#FF8787"]
-
-                for i in range(pilih_k_interaktif):
-                    ith_cluster_silhouette_values = silhouette_vals[
-                        cluster_labels == i
-                    ]
-                    ith_cluster_silhouette_values.sort()
-                    size_cluster_i = ith_cluster_silhouette_values.shape[0]
-                    y_upper = y_lower + size_cluster_i
-
-                    color = colors[i % len(colors)]
-                    ax.fill_betweenx(
-                        np.arange(y_lower, y_upper),
-                        0,
-                        ith_cluster_silhouette_values,
-                        facecolor=color,
-                        edgecolor=color,
-                        alpha=0.7,
-                    )
-                    ax.text(-0.05, y_lower + 0.5 * size_cluster_i, f"Cluster {i+1}")
-                    y_lower = y_upper + 10
-
-                ax.axvline(
-                    x=avg_silhouette,
-                    color="red",
-                    linestyle="--",
-                    label=f"Average Score: {avg_silhouette:.2f}",
-                )
-                ax.set_xlabel("Silhouette Coefficient Values")
-                ax.set_ylabel("Cluster Label")
-                ax.set_title(
-                    f"Silhouette Plot untuk K = {pilih_k_interaktif}", fontsize=11, fontweight="bold"
-                )
-                ax.legend(loc="upper right")
-                ax.set_facecolor("#F8FAFC")
-                fig.patch.set_facecolor("#FFFFFF")
-                st.pyplot(fig)
-
+            st.markdown("<br>", unsafe_allow_html=True)
             st.markdown(
                 f"""
                 <div class="paper-card">
