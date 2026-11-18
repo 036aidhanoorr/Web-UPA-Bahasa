@@ -1027,7 +1027,7 @@ elif st.session_state["active_tab"] == "clustering":
             )
 
 # ==========================================
-# HALAMAN 8: INTERPRETASI HASIL (REVISI VISUALISASI D3/D4 & TAHUN TES)
+# HALAMAN 8: INTERPRETASI HASIL (REVISI ISTILAH & TAMBAHAN ANALISIS D3 VS D4 PER SUBTES)
 # ==========================================
 elif st.session_state["active_tab"] == "interpretasi":
     st.markdown(
@@ -1035,7 +1035,7 @@ elif st.session_state["active_tab"] == "interpretasi":
         <div class="page-header-box">
             <span class="folder-tag">TAHAP 08 • ANALISIS FREKUENSI, JENJANG D3/D4 & TAHUN TES</span>
             <h2 class="section-heading">Interpretasi Hasil Klasterisasi Berbasis Frekuensi & Sebaran Spesifik</h2>
-            <p class="section-desc">Analisis profil mendalam menggunakan frekuensi subtes dengan capaian terendah, visualisasi proporsi jenjang D3 vs D4, distribusi tahun tes, serta matriks kerentanan program studi.</p>
+            <p class="section-desc">Analisis profil mendalam menggunakan frekuensi subtes dengan capaian terendah, perbandingan performa subtes antara jenjang D3 dan D4, visualisasi proporsi, distribusi tahun tes, serta matriks kerentanan program studi.</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -1092,7 +1092,7 @@ elif st.session_state["active_tab"] == "interpretasi":
 
             dak_tier_list = [f"Tier {i+1}" for i in range(optimal_k)]
             pilih_tier_tampil = st.selectbox(
-                "Pilih Tier untuk Menganalisis Frekuensi Subtes, Visualisasi Jenjang D3/D4 & Tahun Tes:",
+                "Pilih Tier untuk Menganalisis Frekuensi Subtes, Perbandingan D3 vs D4 & Tahun Tes:",
                 dak_tier_list,
             )
 
@@ -1188,7 +1188,7 @@ elif st.session_state["active_tab"] == "interpretasi":
 
                 st.markdown("---")
 
-                # BARIS GRAFIK 2: VISUALISASI JENJANG (D3 vs D4) & DOMINASI TAHUN TES
+                # BARIS GRAFIK 2: VISUALISASI JENJANG (D3 vs D4) & DISTRIBUSI TAHUN TES
                 col_v1, col_v2 = st.columns(2)
 
                 with col_v1:
@@ -1234,6 +1234,34 @@ elif st.session_state["active_tab"] == "interpretasi":
                             font=dict(color="#0A3D2E"),
                         )
                         st.plotly_chart(fig_tahun, use_container_width=True)
+
+                st.markdown("---")
+
+                # BARIS TAMBAHAN BARU: PERBANDINGAN RATA-RATA SUBTES ANTARA D3 DAN D4
+                st.subheader(f"Perbandingan Rata-Rata Subtes Antara Jenjang D3 dan D4 di {pilih_tier_tampil}")
+                st.markdown("Menampilkan perbandingan capaian skor rata-rata pada setiap modul subtes secara khusus dikelompokkan berdasarkan jenjang pendidikan:")
+
+                if "Jenjang" in df_filtered_tier.columns:
+                    df_d3_d4_subtes = df_filtered_tier.groupby("Jenjang")[["Section 1", "Section 2", "Section 3", "Total"]].mean().reset_index()
+                    df_d3_d4_melted = df_d3_d4_subtes.melt(id_vars="Jenjang", value_vars=["Section 1", "Section 2", "Section 3"], var_name="Subtes", value_name="Skor Rata-Rata")
+
+                    fig_comp = px.bar(
+                        df_d3_d4_melted,
+                        x="Subtes",
+                        y="Skor Rata-Rata",
+                        color="Jenjang",
+                        barmode="group",
+                        text="Skor Rata-Rata",
+                        color_discrete_map={"D3": "#3B82F6", "D4": "#10C35D"},
+                        height=400
+                    )
+                    fig_comp.update_traces(texttemplate='%{text:.1f}', textposition='outside')
+                    fig_comp.update_layout(
+                        paper_bgcolor="#FFFFFF",
+                        plot_bgcolor="#F8FAFC",
+                        font=dict(color="#0A3D2E"),
+                    )
+                    st.plotly_chart(fig_comp, use_container_width=True)
 
                 st.markdown("---")
                 st.subheader(f"Analisis Kerentanan Subtes Per Program Studi di {pilih_tier_tampil}")
