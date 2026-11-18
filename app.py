@@ -108,6 +108,27 @@ def hitung_evaluasi_full(_X_scaled_tuple):
 
 
 # ==========================================
+# FUNGSI AMAN PENCARIAN TITIK SIKU ELBOW
+# ==========================================
+def find_optimal_k(k_list, inertia_list):
+    points = np.array(list(zip(k_list, inertia_list)))
+    p0 = points[0]
+    p1 = points[-1]
+    
+    distances = []
+    for p in points:
+        if np.all(p1 == p0):
+            dist = np.linalg.norm(p - p0)
+        else:
+            num = np.linalg.norm(np.cross(p1 - p0, p0 - p))
+            den = np.linalg.norm(p1 - p0)
+            dist = num / den if den != 0 else 0
+        distances.append(dist)
+        
+    return k_list[np.argmax(distances)]
+
+
+# ==========================================
 # RENDER STACKED FOLDER TABS DI ATAS
 # ==========================================
 st.markdown('<div class="nav-folder-anchor"></div>', unsafe_allow_html=True)
@@ -127,7 +148,7 @@ for idx, page in enumerate(PAGES):
             st.rerun()
 
 # ==========================================
-# HALAMAN 0: SAMPUL JUDUL & ALUR PENELITIAN (GRID 4x4)
+# HALAMAN 0: SAMPUL JUDUL & ALUR PENELITIAN
 # ==========================================
 if st.session_state["active_tab"] == "home":
     st.markdown(
@@ -769,7 +790,6 @@ elif st.session_state["active_tab"] == "evaluasi":
             df_clean["PC1"] = pca.fit_transform(X_scaled)
             explained_variance = pca.explained_variance_ratio_[0] * 100
 
-            # Jalankan perhitungan ter-cache menggunakan full data
             with st.spinner("Memuat perhitungan evaluasi model..."):
                 inertia, K_range, sil_scores_dict, df_eval_summary = hitung_evaluasi_full(tuple(map(tuple, X_scaled)))
 
@@ -921,20 +941,6 @@ elif st.session_state["active_tab"] == "clustering":
                 km.fit(X_scaled)
                 inertia.append(km.inertia_)
 
-
-            def find_optimal_k(k_list, inertia_list):
-                p1 = np.array([k_list[0], inertia_list[0]])
-                p2 = np.array([k_list[-1], inertia_list[-1]])
-                distances = []
-                for i in range(len(k_list)):
-                    p0 = np.array([k_list[i], inertia_list[i]])
-                    distance = np.linalg.norm(np.cross(p2 - p1, p1 - p0)) / np.linalg.norm(
-                        p2 - p1
-                    )
-                    distances.append(distance)
-                return k_list[distances.index(max(distances))]
-
-
             optimal_k = find_optimal_k(K_range, inertia)
 
             kmeans = KMeans(n_clusters=optimal_k, random_state=42, n_init=10)
@@ -1008,7 +1014,7 @@ elif st.session_state["active_tab"] == "clustering":
             )
 
 # ==========================================
-# HALAMAN 8: INTERPRETASI HASIL (REVISI TO THE POINT)
+# HALAMAN 8: INTERPRETASI HASIL
 # ==========================================
 elif st.session_state["active_tab"] == "interpretasi":
     st.markdown(
@@ -1044,20 +1050,6 @@ elif st.session_state["active_tab"] == "interpretasi":
                 km = KMeans(n_clusters=k, random_state=42, n_init=10)
                 km.fit(X_scaled)
                 inertia.append(km.inertia_)
-
-
-            def find_optimal_k(k_list, inertia_list):
-                p1 = np.array([k_list[0], inertia_list[0]])
-                p2 = np.array([k_list[-1], inertia_list[-1]])
-                distances = []
-                for i in range(len(k_list)):
-                    p0 = np.array([k_list[i], inertia_list[i]])
-                    distance = np.linalg.norm(np.cross(p2 - p1, p1 - p0)) / np.linalg.norm(
-                        p2 - p1
-                    )
-                    distances.append(distance)
-                return k_list[distances.index(max(distances))]
-
 
             optimal_k = find_optimal_k(K_range, inertia)
 

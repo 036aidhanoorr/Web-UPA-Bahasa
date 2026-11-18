@@ -266,7 +266,7 @@ elif st.session_state["active_tab"] == "acquisition":
         <div class="page-header-box">
             <span class="folder-tag">TAHAP 02 • AKUISISI & SUMBER DATA</span>
             <h2 class="section-heading">Data Acquisition</h2>
-            <p class="section-desc">Dokumentasi sumber perolehan data, kriteria sampel, tahapan penggabungan file historis, serta unggah dataset master D3 & D4.</p>
+            <p class="section-desc">Dokumentasi sumber perolehan data, kriteria sampel, tahapan penggabungan file historis, serta unggah dataset gabungan D3 & D4.</p>
         </div>
         """,
         unsafe_allow_html=True,
