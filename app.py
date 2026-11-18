@@ -839,12 +839,57 @@ elif st.session_state["active_tab"] == "evaluasi":
                 st.plotly_chart(fig_elbow, use_container_width=True)
 
             with col_ev2:
-                st.subheader("Silhouette Sebaran Plot Interaktif")
-                pilih_k_interaktif = st.selectbox(
-                    "Pilih Nilai K untuk Menampilkan Silhouette Plot:",
-                    perbandingan_k,
-                    index=perbandingan_k.index(optimal_k)
+                st.markdown("<br>", unsafe_allow_html=True)
+            st.subheader("Perbandingan Silhouette Plot untuk Kandidat Nilai K (K = 2, 3, 4)")
+            st.markdown("Berikut adalah sebaran Silhouette Plot secara berdampingan untuk mengevaluasi kualitas pemisahan klaster pada $K = 2$, $K = 3$, dan $K = 4$:")
+
+            col_s1, col_s2, col_s3 = st.columns(3)
+            cols_list = [col_s1, col_s2, col_s3]
+
+            for idx, k_val in enumerate(perbandingan_k):
+                cluster_labels = sil_scores_dict[k_val]["labels"]
+                silhouette_vals = sil_scores_dict[k_val]["vals"]
+                avg_silhouette = sil_scores_dict[k_val]["score"]
+
+                fig, ax = plt.subplots(figsize=(5, 3.5))
+                y_lower = 10
+                colors = ["#3B82F6", "#F97316", "#10C35D", "#B197FC", "#FF8787"]
+
+                for i in range(k_val):
+                    ith_cluster_silhouette_values = silhouette_vals[
+                        cluster_labels == i
+                    ]
+                    ith_cluster_silhouette_values.sort()
+                    size_cluster_i = ith_cluster_silhouette_values.shape[0]
+                    y_upper = y_lower + size_cluster_i
+
+                    color = colors[i % len(colors)]
+                    ax.fill_betweenx(
+                        np.arange(y_lower, y_upper),
+                        0,
+                        ith_cluster_silhouette_values,
+                        facecolor=color,
+                        edgecolor=color,
+                        alpha=0.7,
+                    )
+                    ax.text(-0.05, y_lower + 0.5 * size_cluster_i, f"C{i+1}", fontsize=8)
+                    y_lower = y_upper + 10
+
+                ax.axvline(
+                    x=avg_silhouette,
+                    color="red",
+                    linestyle="--",
+                    label=f"Avg: {avg_silhouette:.2f}",
                 )
+                ax.set_xlabel("Silhouette Coefficient", fontsize=9)
+                ax.set_ylabel("Cluster Label", fontsize=9)
+                ax.set_title(f"Silhouette Plot untuk K = {k_val}", fontsize=10, fontweight="bold")
+                ax.legend(loc="upper right", fontsize=8)
+                ax.set_facecolor("#F8FAFC")
+                fig.patch.set_facecolor("#FFFFFF")
+                
+                with cols_list[idx]:
+                    st.pyplot(fig)
 
                 cluster_labels = sil_scores_dict[pilih_k_interaktif]["labels"]
                 silhouette_vals = sil_scores_dict[pilih_k_interaktif]["vals"]
