@@ -111,18 +111,15 @@ def hitung_evaluasi_full(_X_scaled_tuple):
 # FUNGSI AMAN PENCARIAN TITIK SIKU ELBOW
 # ==========================================
 def find_optimal_k(k_list, inertia_list):
-    points = np.array(list(zip(k_list, inertia_list)))
-    p0 = points[0]
-    p1 = points[-1]
+    # Cari K optimal paling aman tanpa np.cross (mengambil titik terjauh dari garis lurus ujung ke ujung)
+    p1 = np.array([k_list[0], inertia_list[0]])
+    p2 = np.array([k_list[-1], inertia_list[-1]])
     
     distances = []
-    for p in points:
-        if np.all(p1 == p0):
-            dist = np.linalg.norm(p - p0)
-        else:
-            num = np.linalg.norm(np.cross(p1 - p0, p0 - p))
-            den = np.linalg.norm(p1 - p0)
-            dist = num / den if den != 0 else 0
+    for k, val in zip(k_list, inertia_list):
+        p0 = np.array([k, val])
+        # Hitung jarak tegak lurus secara matematis sederhana
+        dist = np.abs(np.cross(p2 - p1, p1 - p0)) / np.linalg.norm(p2 - p1)
         distances.append(dist)
         
     return k_list[np.argmax(distances)]
