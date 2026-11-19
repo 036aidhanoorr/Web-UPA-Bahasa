@@ -44,23 +44,23 @@ if "uploaded_file_cache" not in st.session_state:
 apply_custom_theme("#FAFDFB")
 
 # ==========================================
-# OTOMATIS DETEKSI DARK MODE BROWSER / HP
+# OTOMATIS DETEKSI DARK MODE BROWSER / HP (AMAN UNTUK TEKS BERLATAR GELAP)
 # ==========================================
 st.markdown(
     """
     <style>
     @media (prefers-color-scheme: dark) {
-        /* Pastikan background utama tetap mempertahankan konsep mint terang #FAFDFB */
+        /* Pertahankan latar utama mint terang #FAFDFB */
         .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
             background-color: #FAFDFB !important;
             color: #0A3D2E !important;
         }
 
-        /* Perbaiki teks pada tombol tab navigasi yang menggelap saat browser dark mode */
+        /* Tombol tab navigasi atas */
         div[data-testid="stHorizontalBlock"] button[kind="secondary"],
         div[data-testid="stHorizontalBlock"] button[kind="secondary"] p {
             background-color: #1F2937 !important;
-            color: #F9FAFB !important;
+            color: #FFFFFF !important;
             border: 1px solid #374151 !important;
         }
 
@@ -69,24 +69,43 @@ st.markdown(
             color: #FFFFFF !important;
         }
 
-        /* Perbaiki teks pada Selectbox / Dropdown (seperti Pilih Tier) */
+        /* Dropdown / Selectbox */
         div[data-baseweb="select"] > div {
             background-color: #1F2937 !important;
-            color: #F9FAFB !important;
+            color: #FFFFFF !important;
         }
         div[data-baseweb="select"] span,
         div[data-baseweb="select"] div,
         div[data-baseweb="select"] svg {
-            color: #F9FAFB !important;
-            fill: #F9FAFB !important;
+            color: #FFFFFF !important;
+            fill: #FFFFFF !important;
         }
 
-        /* Perbaiki label widget, subheader, markdown, dan metric agar tetap terbaca jelas */
-        .stMarkdown, .stMarkdown p, .stMarkdown li, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4,
+        /* Teks di atas latar terang (#FAFDFB & kartu) tetap gelap kontras */
+        [data-testid="stAppViewContainer"] > .main h1,
+        [data-testid="stAppViewContainer"] > .main h2,
+        [data-testid="stAppViewContainer"] > .main h3,
+        [data-testid="stAppViewContainer"] > .main h4,
+        [data-testid="stAppViewContainer"] > .main > div > div > div > [data-testid="stMarkdownContainer"] > p,
+        [data-testid="stAppViewContainer"] > .main > div > div > div > [data-testid="stMarkdownContainer"] > ul li,
+        [data-testid="stAppViewContainer"] > .main > div > div > div > [data-testid="stMarkdownContainer"] > ol li,
+        .paper-card, .paper-card p, .paper-card li, .paper-card h4,
+        .paper-card-accent, .paper-card-accent p, .paper-card-accent li, .paper-card-accent h4,
         label[data-testid="stWidgetLabel"] p,
         [data-testid="stMetricLabel"] p,
         [data-testid="stMetricValue"] div {
             color: #0A3D2E !important;
+        }
+
+        /* Jaga teks di elemen berlatar gelap (metric delta, tag code, dan alert box) tetap putih */
+        [data-testid="stMetricDelta"],
+        [data-testid="stMetricDelta"] *,
+        code,
+        [data-testid="stAlert"],
+        [data-testid="stAlert"] p,
+        [data-testid="stAlert"] span,
+        [data-testid="stAlert"] div {
+            color: #FFFFFF !important;
         }
     }
     </style>
@@ -628,6 +647,8 @@ elif st.session_state["active_tab"] == "eda":
                         paper_bgcolor="#FFFFFF",
                         plot_bgcolor="#F8FAFC",
                         font=dict(color="#0A3D2E"),
+                        xaxis=dict(color="#0A3D2E", tickfont=dict(color="#0A3D2E"), title_font=dict(color="#0A3D2E")),
+                        yaxis=dict(color="#0A3D2E", tickfont=dict(color="#0A3D2E"), title_font=dict(color="#0A3D2E")),
                         height=380,
                     )
                     st.plotly_chart(fig_box_sub, use_container_width=True)
@@ -647,6 +668,8 @@ elif st.session_state["active_tab"] == "eda":
                         paper_bgcolor="#FFFFFF",
                         plot_bgcolor="#F8FAFC",
                         font=dict(color="#0A3D2E"),
+                        xaxis=dict(color="#0A3D2E", tickfont=dict(color="#0A3D2E"), title_font=dict(color="#0A3D2E")),
+                        yaxis=dict(color="#0A3D2E", tickfont=dict(color="#0A3D2E"), title_font=dict(color="#0A3D2E")),
                         height=380,
                     )
                     st.plotly_chart(fig_box_tot, use_container_width=True)
@@ -735,8 +758,8 @@ elif st.session_state["active_tab"] == "eda":
                 )
                 fig_hbar.update_traces(textposition="auto", textfont_size=10)
                 fig_hbar.update_layout(
-                    yaxis=dict(type="category"),
-                    xaxis=dict(range=[0, 62]),
+                    yaxis=dict(type="category", color="#0A3D2E", tickfont=dict(color="#0A3D2E"), title_font=dict(color="#0A3D2E")),
+                    xaxis=dict(range=[0, 62], color="#0A3D2E", tickfont=dict(color="#0A3D2E"), title_font=dict(color="#0A3D2E")),
                     paper_bgcolor="#FFFFFF",
                     plot_bgcolor="#F8FAFC",
                     font=dict(color="#0A3D2E"),
@@ -781,7 +804,8 @@ elif st.session_state["active_tab"] == "eda":
                     height=380,
                 )
                 fig_trend_sub.update_layout(
-                    xaxis=dict(type="category"),
+                    xaxis=dict(type="category", color="#0A3D2E", tickfont=dict(color="#0A3D2E"), title_font=dict(color="#0A3D2E")),
+                    yaxis=dict(color="#0A3D2E", tickfont=dict(color="#0A3D2E"), title_font=dict(color="#0A3D2E")),
                     paper_bgcolor="#FFFFFF",
                     plot_bgcolor="#F8FAFC",
                     font=dict(color="#0A3D2E"),
@@ -804,7 +828,8 @@ elif st.session_state["active_tab"] == "eda":
                         height=380,
                     )
                     fig_trend_tot.update_layout(
-                        xaxis=dict(type="category"),
+                        xaxis=dict(type="category", color="#0A3D2E", tickfont=dict(color="#0A3D2E"), title_font=dict(color="#0A3D2E")),
+                        yaxis=dict(color="#0A3D2E", tickfont=dict(color="#0A3D2E"), title_font=dict(color="#0A3D2E")),
                         paper_bgcolor="#FFFFFF",
                         plot_bgcolor="#F8FAFC",
                         font=dict(color="#0A3D2E"),
@@ -896,6 +921,8 @@ elif st.session_state["active_tab"] == "evaluasi":
                     paper_bgcolor="#FFFFFF",
                     plot_bgcolor="#F8FAFC",
                     font=dict(color="#0A3D2E"),
+                    xaxis=dict(color="#0A3D2E", tickfont=dict(color="#0A3D2E"), title_font=dict(color="#0A3D2E")),
+                    yaxis=dict(color="#0A3D2E", tickfont=dict(color="#0A3D2E"), title_font=dict(color="#0A3D2E")),
                 )
                 st.plotly_chart(fig_elbow, use_container_width=True)
 
@@ -1240,6 +1267,8 @@ elif st.session_state["active_tab"] == "interpretasi":
                         paper_bgcolor="#FFFFFF",
                         plot_bgcolor="#F8FAFC",
                         font=dict(color="#0A3D2E"),
+                        xaxis=dict(color="#0A3D2E", tickfont=dict(color="#0A3D2E"), title_font=dict(color="#0A3D2E")),
+                        yaxis=dict(color="#0A3D2E", tickfont=dict(color="#0A3D2E"), title_font=dict(color="#0A3D2E")),
                         showlegend=False,
                     )
                     st.plotly_chart(fig_freq, use_container_width=True)
@@ -1265,7 +1294,8 @@ elif st.session_state["active_tab"] == "interpretasi":
                         )
                         fig_tahun.update_traces(textposition="outside")
                         fig_tahun.update_layout(
-                            xaxis=dict(type="category"),
+                            xaxis=dict(type="category", color="#0A3D2E", tickfont=dict(color="#0A3D2E"), title_font=dict(color="#0A3D2E")),
+                            yaxis=dict(color="#0A3D2E", tickfont=dict(color="#0A3D2E"), title_font=dict(color="#0A3D2E")),
                             paper_bgcolor="#FFFFFF",
                             plot_bgcolor="#F8FAFC",
                             font=dict(color="#0A3D2E"),
@@ -1337,6 +1367,8 @@ elif st.session_state["active_tab"] == "interpretasi":
                             paper_bgcolor="#FFFFFF",
                             plot_bgcolor="#F8FAFC",
                             font=dict(color="#0A3D2E"),
+                            xaxis=dict(color="#0A3D2E", tickfont=dict(color="#0A3D2E"), title_font=dict(color="#0A3D2E")),
+                            yaxis=dict(color="#0A3D2E", tickfont=dict(color="#0A3D2E"), title_font=dict(color="#0A3D2E")),
                         )
                         st.plotly_chart(fig_comp, use_container_width=True)
 
@@ -1398,6 +1430,14 @@ elif st.session_state["active_tab"] == "interpretasi":
                             categoryorder="array",
                             categoryarray=urutan_terbesar_ke_terkecil,
                             autorange="reversed",
+                            color="#0A3D2E",
+                            tickfont=dict(color="#0A3D2E"),
+                            title_font=dict(color="#0A3D2E"),
+                        )
+                        fig_prodi.update_xaxes(
+                            color="#0A3D2E",
+                            tickfont=dict(color="#0A3D2E"),
+                            title_font=dict(color="#0A3D2E"),
                         )
                         fig_prodi.update_layout(
                             paper_bgcolor="#FFFFFF",
@@ -1435,6 +1475,14 @@ elif st.session_state["active_tab"] == "interpretasi":
                             categoryorder="array",
                             categoryarray=urutan_terbesar_ke_terkecil,
                             autorange="reversed",
+                            color="#0A3D2E",
+                            tickfont=dict(color="#0A3D2E"),
+                            title_font=dict(color="#0A3D2E"),
+                        )
+                        fig_val_prodi.update_xaxes(
+                            color="#0A3D2E",
+                            tickfont=dict(color="#0A3D2E"),
+                            title_font=dict(color="#0A3D2E"),
                         )
                         fig_val_prodi.update_layout(
                             paper_bgcolor="#FFFFFF",
