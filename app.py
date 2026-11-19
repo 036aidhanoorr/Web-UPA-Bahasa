@@ -1303,6 +1303,8 @@ elif st.session_state["active_tab"] == "interpretasi":
                     top_prodi_tier = (
                         df_filtered_tier["Prodi"].value_counts().head(5).index
                     )
+                    urutan_prodi_atas_ke_bawah = list(top_prodi_tier)[::-1]
+
                     df_prodi_top = (
                         prodi_terbanyak.loc[top_prodi_tier].reset_index()
                     )
@@ -1329,13 +1331,12 @@ elif st.session_state["active_tab"] == "interpretasi":
                             y="Program Studi",
                             orientation="h",
                             text="Jumlah Mahasiswa",
-                            category_orders={"Program Studi": list(top_prodi_tier)},
+                            category_orders={"Program Studi": urutan_prodi_atas_ke_bawah},
                             color_discrete_sequence=["#B197FC"],
                             height=440,
                         )
                         fig_prodi.update_traces(textposition="outside")
                         fig_prodi.update_layout(
-                            yaxis=dict(autorange="reversed"),
                             paper_bgcolor="#FFFFFF",
                             plot_bgcolor="#F8FAFC",
                             font=dict(color="#0A3D2E"),
@@ -1354,7 +1355,7 @@ elif st.session_state["active_tab"] == "interpretasi":
                             barmode="group",
                             orientation="h",
                             text="Jumlah_Mahasiswa",
-                            category_orders={"Prodi": list(top_prodi_tier)},
+                            category_orders={"Prodi": urutan_prodi_atas_ke_bawah},
                             color_discrete_map={
                                 "Section 1": "#10C35D",
                                 "Section 2": "#3A86FF",
@@ -1369,7 +1370,6 @@ elif st.session_state["active_tab"] == "interpretasi":
                         )
                         fig_val_prodi.update_traces(textposition="outside")
                         fig_val_prodi.update_layout(
-                            yaxis=dict(autorange="reversed"),
                             paper_bgcolor="#FFFFFF",
                             plot_bgcolor="#F8FAFC",
                             font=dict(color="#0A3D2E"),
