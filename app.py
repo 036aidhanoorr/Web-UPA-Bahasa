@@ -40,8 +40,70 @@ if "active_tab" not in st.session_state:
 if "uploaded_file_cache" not in st.session_state:
     st.session_state["uploaded_file_cache"] = None
 
+if "chart_theme_mode" not in st.session_state:
+    st.session_state["chart_theme_mode"] = "Light"
+
 # Terapkan Tema CSS Konsisten (#FAFDFB)
 apply_custom_theme("#FAFDFB")
+
+
+# ==========================================
+# FUNGSI ADAPTIF TEMA GRAFIK PLOTLY (LIGHT / DARK)
+# ==========================================
+def style_plotly_fig(fig, is_dark=False, height=380, extra_layout=None):
+    if is_dark:
+        paper_bg = "#111827"
+        plot_bg = "#1F2937"
+        text_color = "#F9FAFB"
+        grid_color = "#374151"
+    else:
+        paper_bg = "#FFFFFF"
+        plot_bg = "#F8FAFC"
+        text_color = "#0A3D2E"
+        grid_color = "#E2E8F0"
+
+    layout_kwargs = dict(
+        paper_bgcolor=paper_bg,
+        plot_bgcolor=plot_bg,
+        font=dict(color=text_color),
+        height=height,
+    )
+    if extra_layout:
+        layout_kwargs.update(extra_layout)
+
+    fig.update_layout(**layout_kwargs)
+    fig.update_xaxes(
+        gridcolor=grid_color,
+        title_font=dict(color=text_color),
+        tickfont=dict(color=text_color),
+    )
+    fig.update_yaxes(
+        gridcolor=grid_color,
+        title_font=dict(color=text_color),
+        tickfont=dict(color=text_color),
+    )
+    return fig
+
+
+def apply_adaptive_card_css(is_dark=False):
+    if is_dark:
+        st.markdown(
+            """
+            <style>
+            .paper-card, .paper-card-accent {
+                background-color: #111827 !important;
+                color: #F9FAFB !important;
+                border-color: #374151 !important;
+            }
+            .paper-card h4, .paper-card-accent h4,
+            .paper-card li, .paper-card-accent li,
+            .paper-card p, .paper-card-accent p {
+                color: #F9FAFB !important;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
 
 
 # ==========================================
@@ -148,6 +210,9 @@ for idx, page in enumerate(PAGES):
         ):
             st.session_state["active_tab"] = page["id"]
             st.rerun()
+
+is_dark_mode = st.session_state["chart_theme_mode"] == "Dark"
+apply_adaptive_card_css(is_dark_mode)
 
 # ==========================================
 # HALAMAN 0: SAMPUL JUDUL & ALUR PENELITIAN
@@ -573,12 +638,7 @@ elif st.session_state["active_tab"] == "eda":
                         color_discrete_sequence=["#10C35D", "#3A86FF", "#FF8A4C"],
                         labels={"value": "Skor Subtes", "variable": "Subtes TOEFL"},
                     )
-                    fig_box_sub.update_layout(
-                        paper_bgcolor="#FFFFFF",
-                        plot_bgcolor="#F8FAFC",
-                        font=dict(color="#0A3D2E"),
-                        height=380,
-                    )
+                    style_plotly_fig(fig_box_sub, is_dark=is_dark_mode, height=380)
                     st.plotly_chart(fig_box_sub, use_container_width=True)
 
             with col_box2:
@@ -592,12 +652,7 @@ elif st.session_state["active_tab"] == "eda":
                         color_discrete_sequence=["#B197FC"],
                         labels={"value": "Skor Total", "variable": "Komposit"},
                     )
-                    fig_box_tot.update_layout(
-                        paper_bgcolor="#FFFFFF",
-                        plot_bgcolor="#F8FAFC",
-                        font=dict(color="#0A3D2E"),
-                        height=380,
-                    )
+                    style_plotly_fig(fig_box_tot, is_dark=is_dark_mode, height=380)
                     st.plotly_chart(fig_box_tot, use_container_width=True)
 
             st.markdown("---")
@@ -683,12 +738,14 @@ elif st.session_state["active_tab"] == "eda":
                     },
                 )
                 fig_hbar.update_traces(textposition="auto", textfont_size=10)
-                fig_hbar.update_layout(
-                    yaxis=dict(type="category"),
-                    xaxis=dict(range=[0, 62]),
-                    paper_bgcolor="#FFFFFF",
-                    plot_bgcolor="#F8FAFC",
-                    font=dict(color="#0A3D2E"),
+                style_plotly_fig(
+                    fig_hbar,
+                    is_dark=is_dark_mode,
+                    height=480,
+                    extra_layout={
+                        "yaxis": dict(type="category"),
+                        "xaxis": dict(range=[0, 62]),
+                    },
                 )
                 st.plotly_chart(fig_hbar, use_container_width=True)
 
@@ -729,11 +786,11 @@ elif st.session_state["active_tab"] == "eda":
                     },
                     height=380,
                 )
-                fig_trend_sub.update_layout(
-                    xaxis=dict(type="category"),
-                    paper_bgcolor="#FFFFFF",
-                    plot_bgcolor="#F8FAFC",
-                    font=dict(color="#0A3D2E"),
+                style_plotly_fig(
+                    fig_trend_sub,
+                    is_dark=is_dark_mode,
+                    height=380,
+                    extra_layout={"xaxis": dict(type="category")},
                 )
                 st.plotly_chart(fig_trend_sub, use_container_width=True)
 
@@ -752,11 +809,11 @@ elif st.session_state["active_tab"] == "eda":
                         },
                         height=380,
                     )
-                    fig_trend_tot.update_layout(
-                        xaxis=dict(type="category"),
-                        paper_bgcolor="#FFFFFF",
-                        plot_bgcolor="#F8FAFC",
-                        font=dict(color="#0A3D2E"),
+                    style_plotly_fig(
+                        fig_trend_tot,
+                        is_dark=is_dark_mode,
+                        height=380,
+                        extra_layout={"xaxis": dict(type="category")},
                     )
                     st.plotly_chart(fig_trend_tot, use_container_width=True)
 
@@ -832,7 +889,7 @@ elif st.session_state["active_tab"] == "evaluasi":
                 )
                 fig_elbow.update_traces(
                     line=dict(color="#10C35D", width=3),
-                    marker=dict(size=9, color="#0A3D2E"),
+                    marker=dict(size=9, color="#10C35D" if is_dark_mode else "#0A3D2E"),
                 )
                 fig_elbow.add_vline(
                     x=optimal_k,
@@ -841,11 +898,7 @@ elif st.session_state["active_tab"] == "evaluasi":
                     line_width=2.5,
                     annotation_text=f"Titik Siku Elbow (K = {optimal_k})",
                 )
-                fig_elbow.update_layout(
-                    paper_bgcolor="#FFFFFF",
-                    plot_bgcolor="#F8FAFC",
-                    font=dict(color="#0A3D2E"),
-                )
+                style_plotly_fig(fig_elbow, is_dark=is_dark_mode, height=380)
                 st.plotly_chart(fig_elbow, use_container_width=True)
 
             with col_ev2:
@@ -898,7 +951,13 @@ elif st.session_state["active_tab"] == "evaluasi":
                         edgecolor=color,
                         alpha=0.7,
                     )
-                    ax.text(-0.05, y_lower + 0.5 * size_cluster_i, f"C{i+1}", fontsize=8)
+                    ax.text(
+                        -0.05,
+                        y_lower + 0.5 * size_cluster_i,
+                        f"C{i+1}",
+                        fontsize=8,
+                        color="#F9FAFB" if is_dark_mode else "#0A3D2E",
+                    )
                     y_lower = y_upper + 10
 
                 ax.axvline(
@@ -907,14 +966,26 @@ elif st.session_state["active_tab"] == "evaluasi":
                     linestyle="--",
                     label=f"Avg: {avg_silhouette:.2f}",
                 )
-                ax.set_xlabel("Silhouette Coefficient", fontsize=9)
-                ax.set_ylabel("Cluster Label", fontsize=9)
-                ax.set_title(
-                    f"Silhouette Plot untuk K = {k_val}", fontsize=10, fontweight="bold"
+                ax.set_xlabel(
+                    "Silhouette Coefficient",
+                    fontsize=9,
+                    color="#F9FAFB" if is_dark_mode else "#0A3D2E",
                 )
+                ax.set_ylabel(
+                    "Cluster Label",
+                    fontsize=9,
+                    color="#F9FAFB" if is_dark_mode else "#0A3D2E",
+                )
+                ax.set_title(
+                    f"Silhouette Plot untuk K = {k_val}",
+                    fontsize=10,
+                    fontweight="bold",
+                    color="#F9FAFB" if is_dark_mode else "#0A3D2E",
+                )
+                ax.tick_params(colors="#F9FAFB" if is_dark_mode else "#0A3D2E")
                 ax.legend(loc="upper right", fontsize=8)
-                ax.set_facecolor("#F8FAFC")
-                fig.patch.set_facecolor("#FFFFFF")
+                ax.set_facecolor("#1F2937" if is_dark_mode else "#F8FAFC")
+                fig.patch.set_facecolor("#111827" if is_dark_mode else "#FFFFFF")
 
                 with cols_list[idx]:
                     st.pyplot(fig)
@@ -1110,11 +1181,23 @@ elif st.session_state["active_tab"] == "interpretasi":
             else:
                 df_clean["Jenjang"] = "Tidak Diketahui"
 
+            col_ctrl1, col_ctrl2 = st.columns([2, 1])
             dak_tier_list = [f"Tier {i+1}" for i in range(optimal_k)]
-            pilih_tier_tampil = st.selectbox(
-                "Pilih Tier untuk Menganalisis Frekuensi Subtes, Perbandingan D3 vs D4 & Tahun Tes:",
-                dak_tier_list,
-            )
+            with col_ctrl1:
+                pilih_tier_tampil = st.selectbox(
+                    "Pilih Tier untuk Menganalisis Frekuensi Subtes, Perbandingan D3 vs D4 & Tahun Tes:",
+                    dak_tier_list,
+                )
+            with col_ctrl2:
+                pilih_tema_grafik = st.radio(
+                    "Tema Visualisasi Grafik:",
+                    ["Light", "Dark"],
+                    index=1 if is_dark_mode else 0,
+                    horizontal=True,
+                )
+                if pilih_tema_grafik != st.session_state["chart_theme_mode"]:
+                    st.session_state["chart_theme_mode"] = pilih_tema_grafik
+                    st.rerun()
 
             df_filtered_tier = df_clean[
                 df_clean["Level_Tier"] == pilih_tier_tampil
@@ -1182,14 +1265,13 @@ elif st.session_state["active_tab"] == "interpretasi":
                             "Section 2": "#3A86FF",
                             "Section 3": "#FF8A4C",
                         },
-                        height=360,
                     )
                     fig_freq.update_traces(textposition="outside")
-                    fig_freq.update_layout(
-                        paper_bgcolor="#FFFFFF",
-                        plot_bgcolor="#F8FAFC",
-                        font=dict(color="#0A3D2E"),
-                        showlegend=False,
+                    style_plotly_fig(
+                        fig_freq,
+                        is_dark=is_dark_mode,
+                        height=360,
+                        extra_layout={"showlegend": False},
                     )
                     st.plotly_chart(fig_freq, use_container_width=True)
 
@@ -1210,14 +1292,13 @@ elif st.session_state["active_tab"] == "interpretasi":
                             y="Jumlah Mahasiswa",
                             text="Jumlah Mahasiswa",
                             color_discrete_sequence=["#FFA94D"],
-                            height=360,
                         )
                         fig_tahun.update_traces(textposition="outside")
-                        fig_tahun.update_layout(
-                            xaxis=dict(type="category"),
-                            paper_bgcolor="#FFFFFF",
-                            plot_bgcolor="#F8FAFC",
-                            font=dict(color="#0A3D2E"),
+                        style_plotly_fig(
+                            fig_tahun,
+                            is_dark=is_dark_mode,
+                            height=360,
+                            extra_layout={"xaxis": dict(type="category")},
                         )
                         st.plotly_chart(fig_tahun, use_container_width=True)
 
@@ -1241,13 +1322,8 @@ elif st.session_state["active_tab"] == "interpretasi":
                         values="Jumlah Mahasiswa",
                         hole=0.4,
                         color_discrete_sequence=["#3B82F6", "#10C35D", "#FF8A4C"],
-                        height=380,
                     )
-                    fig_jenjang.update_layout(
-                        paper_bgcolor="#FFFFFF",
-                        plot_bgcolor="#F8FAFC",
-                        font=dict(color="#0A3D2E"),
-                    )
+                    style_plotly_fig(fig_jenjang, is_dark=is_dark_mode, height=380)
                     st.plotly_chart(fig_jenjang, use_container_width=True)
 
                 with col_v2:
@@ -1277,16 +1353,11 @@ elif st.session_state["active_tab"] == "interpretasi":
                             barmode="group",
                             text="Skor Rata-Rata",
                             color_discrete_map={"D3": "#3B82F6", "D4": "#10C35D"},
-                            height=380,
                         )
                         fig_comp.update_traces(
                             texttemplate="%{text:.1f}", textposition="outside"
                         )
-                        fig_comp.update_layout(
-                            paper_bgcolor="#FFFFFF",
-                            plot_bgcolor="#F8FAFC",
-                            font=dict(color="#0A3D2E"),
-                        )
+                        style_plotly_fig(fig_comp, is_dark=is_dark_mode, height=380)
                         st.plotly_chart(fig_comp, use_container_width=True)
 
                 st.markdown("---")
@@ -1340,18 +1411,19 @@ elif st.session_state["active_tab"] == "interpretasi":
                             orientation="h",
                             text="Jumlah Mahasiswa",
                             color_discrete_sequence=["#B197FC"],
-                            height=440,
                         )
                         fig_prodi.update_traces(textposition="outside")
-                        fig_prodi.update_yaxes(
-                            categoryorder="array",
-                            categoryarray=urutan_terbesar_ke_terkecil,
-                            autorange="reversed",
-                        )
-                        fig_prodi.update_layout(
-                            paper_bgcolor="#FFFFFF",
-                            plot_bgcolor="#F8FAFC",
-                            font=dict(color="#0A3D2E"),
+                        style_plotly_fig(
+                            fig_prodi,
+                            is_dark=is_dark_mode,
+                            height=440,
+                            extra_layout={
+                                "yaxis": dict(
+                                    categoryorder="array",
+                                    categoryarray=urutan_terbesar_ke_terkecil,
+                                    autorange="reversed",
+                                )
+                            },
                         )
                         st.plotly_chart(fig_prodi, use_container_width=True)
 
@@ -1377,18 +1449,19 @@ elif st.session_state["active_tab"] == "interpretasi":
                                 "Prodi": "Program Studi",
                                 "Subtes_Terlemah_Mhs": "Subtes Capaian Terendah",
                             },
-                            height=440,
                         )
                         fig_val_prodi.update_traces(textposition="outside")
-                        fig_val_prodi.update_yaxes(
-                            categoryorder="array",
-                            categoryarray=urutan_terbesar_ke_terkecil,
-                            autorange="reversed",
-                        )
-                        fig_val_prodi.update_layout(
-                            paper_bgcolor="#FFFFFF",
-                            plot_bgcolor="#F8FAFC",
-                            font=dict(color="#0A3D2E"),
+                        style_plotly_fig(
+                            fig_val_prodi,
+                            is_dark=is_dark_mode,
+                            height=440,
+                            extra_layout={
+                                "yaxis": dict(
+                                    categoryorder="array",
+                                    categoryarray=urutan_terbesar_ke_terkecil,
+                                    autorange="reversed",
+                                )
+                            },
                         )
                         st.plotly_chart(fig_val_prodi, use_container_width=True)
 
