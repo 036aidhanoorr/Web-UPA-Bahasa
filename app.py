@@ -1300,15 +1300,21 @@ elif st.session_state["active_tab"] == "interpretasi":
                 )
 
                 if "Prodi" in df_filtered_tier.columns:
-                    top_prodi_tier = (
-                        df_filtered_tier["Prodi"].value_counts().head(5).index
-                    )
-                    urutan_prodi_atas_ke_bawah = list(top_prodi_tier)[::-1]
-
+                    # Urutkan dari jumlah terbesar ke terkecil (atas ke bawah)
                     df_prodi_top = (
-                        prodi_terbanyak.loc[top_prodi_tier].reset_index()
+                        df_filtered_tier["Prodi"]
+                        .value_counts()
+                        .head(5)
+                        .reset_index()
                     )
                     df_prodi_top.columns = ["Program Studi", "Jumlah Mahasiswa"]
+                    df_prodi_top = df_prodi_top.sort_values(
+                        "Jumlah Mahasiswa", ascending=False
+                    )
+
+                    urutan_terbesar_ke_terkecil = df_prodi_top[
+                        "Program Studi"
+                    ].tolist()
 
                     df_validasi_prodi = (
                         df_filtered_tier.groupby(["Prodi", "Subtes_Terlemah_Mhs"])
@@ -1316,7 +1322,9 @@ elif st.session_state["active_tab"] == "interpretasi":
                         .reset_index(name="Jumlah_Mahasiswa")
                     )
                     df_validasi_top = df_validasi_prodi[
-                        df_validasi_prodi["Prodi"].isin(top_prodi_tier)
+                        df_validasi_prodi["Prodi"].isin(
+                            urutan_terbesar_ke_terkecil
+                        )
                     ]
 
                     col_p5_1, col_p5_2 = st.columns(2)
@@ -1331,11 +1339,15 @@ elif st.session_state["active_tab"] == "interpretasi":
                             y="Program Studi",
                             orientation="h",
                             text="Jumlah Mahasiswa",
-                            category_orders={"Program Studi": urutan_prodi_atas_ke_bawah},
                             color_discrete_sequence=["#B197FC"],
                             height=440,
                         )
                         fig_prodi.update_traces(textposition="outside")
+                        fig_prodi.update_yaxes(
+                            categoryorder="array",
+                            categoryarray=urutan_terbesar_ke_terkecil,
+                            autorange="reversed",
+                        )
                         fig_prodi.update_layout(
                             paper_bgcolor="#FFFFFF",
                             plot_bgcolor="#F8FAFC",
@@ -1355,7 +1367,6 @@ elif st.session_state["active_tab"] == "interpretasi":
                             barmode="group",
                             orientation="h",
                             text="Jumlah_Mahasiswa",
-                            category_orders={"Prodi": urutan_prodi_atas_ke_bawah},
                             color_discrete_map={
                                 "Section 1": "#10C35D",
                                 "Section 2": "#3A86FF",
@@ -1369,6 +1380,11 @@ elif st.session_state["active_tab"] == "interpretasi":
                             height=440,
                         )
                         fig_val_prodi.update_traces(textposition="outside")
+                        fig_val_prodi.update_yaxes(
+                            categoryorder="array",
+                            categoryarray=urutan_terbesar_ke_terkecil,
+                            autorange="reversed",
+                        )
                         fig_val_prodi.update_layout(
                             paper_bgcolor="#FFFFFF",
                             plot_bgcolor="#F8FAFC",
