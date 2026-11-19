@@ -853,7 +853,7 @@ elif st.session_state["active_tab"] == "evaluasi":
 
             st.markdown("<br>", unsafe_allow_html=True)
             st.subheader("Perbandingan Silhouette Plot untuk Kandidat Nilai K (K = 2, 3, 4)")
-            st.markdown("Berikut adalah sebaran Silhouette Plot secara berdampingan untuk mengevaluasi kualitas pemisahan klaster pada $K = 2$, $K = 3$, dan $K = 4$:")
+            st.markdown("Berikut adalah sebaran Silhouette Plot untuk mengevaluasi kualitas pemisahan klaster pada $K = 2$, $K = 3$, dan $K = 4$:")
 
             col_s1, col_s2, col_s3 = st.columns(3)
             cols_list = [col_s1, col_s2, col_s3]
@@ -1034,7 +1034,7 @@ elif st.session_state["active_tab"] == "interpretasi":
         """
         <div class="page-header-box">
             <span class="folder-tag">TAHAP 08 • ANALISIS FREKUENSI, JENJANG D3/D4 & TAHUN TES</span>
-            <h2 class="section-heading">Interpretasi Hasil Klasterisasi Berbasis Frekuensi & Sebaran Spesifik</h2>
+            <h2 class="section-heading">Interpretasi Hasil Klasterisasi</h2>
             <p class="section-desc">Analisis profil mendalam menggunakan frekuensi subtes dengan capaian terendah, perbandingan performa subtes antara jenjang D3 dan D4, visualisasi proporsi, distribusi tahun tes, serta matriks kerentanan program studi.</p>
         </div>
         """,
