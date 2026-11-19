@@ -1133,7 +1133,7 @@ elif st.session_state["active_tab"] == "interpretasi":
 
                 st.markdown("<br>", unsafe_allow_html=True)
 
-                # BARIS GRAFIK 1: FREKUENSI SUBTES & PRODI TERBANYAK
+                # BARIS GRAFIK 1: FREKUENSI SUBTES & TOP 5 PRODI TERBANYAK
                 col_f1, col_f2 = st.columns(2)
                 
                 with col_f1:
@@ -1164,8 +1164,8 @@ elif st.session_state["active_tab"] == "interpretasi":
                     st.plotly_chart(fig_freq, use_container_width=True)
 
                 with col_f2:
-                    st.subheader(f"Top Program Studi Penyumbang di {pilih_tier_tampil}")
-                    df_prodi_top = prodi_terbanyak.head(7).reset_index()
+                    st.subheader(f"Top 5 Program Studi Penyumbang di {pilih_tier_tampil}")
+                    df_prodi_top = prodi_terbanyak.head(5).reset_index()
                     df_prodi_top.columns = ["Program Studi", "Jumlah Mahasiswa"]
                     
                     fig_prodi = px.bar(
@@ -1264,8 +1264,8 @@ elif st.session_state["active_tab"] == "interpretasi":
                     st.plotly_chart(fig_comp, use_container_width=True)
 
                 st.markdown("---")
-                st.subheader(f"Analisis Kerentanan Subtes Per Program Studi di {pilih_tier_tampil}")
-                st.markdown("Matriks perbandingan mendalam untuk melihat subtes mana yang paling sering rendah pada masing-masing Program Studi:")
+                st.subheader(f"Analisis Kerentanan Subtes Top 5 Program Studi di {pilih_tier_tampil}")
+                st.markdown("Perbandingan frekuensi subtes dengan capaian terendah pada 5 program studi penyumbang terbanyak di tier ini:")
 
                 if "Prodi" in df_filtered_tier.columns:
                     df_validasi_prodi = (
@@ -1275,7 +1275,7 @@ elif st.session_state["active_tab"] == "interpretasi":
                     )
 
                     top_prodi_tier = (
-                        df_filtered_tier["Prodi"].value_counts().head(10).index
+                        df_filtered_tier["Prodi"].value_counts().head(5).index
                     )
                     df_validasi_top = df_validasi_prodi[
                         df_validasi_prodi["Prodi"].isin(top_prodi_tier)
@@ -1289,6 +1289,7 @@ elif st.session_state["active_tab"] == "interpretasi":
                         barmode="group",
                         orientation="h",
                         text="Jumlah_Mahasiswa",
+                        category_orders={"Prodi": list(top_prodi_tier)},
                         color_discrete_map={
                             "Section 1": "#10C35D",
                             "Section 2": "#3A86FF",
@@ -1297,9 +1298,9 @@ elif st.session_state["active_tab"] == "interpretasi":
                         labels={
                             "Jumlah_Mahasiswa": "Jumlah Mahasiswa",
                             "Prodi": "Program Studi",
-                            "Subtes_Terlemah_Mhs": "Subtes Paling Lemah",
+                            "Subtes_Terlemah_Mhs": "Subtes Capaian Terendah",
                         },
-                        height=480,
+                        height=420,
                     )
                     fig_val_prodi.update_traces(textposition="outside")
                     fig_val_prodi.update_layout(
