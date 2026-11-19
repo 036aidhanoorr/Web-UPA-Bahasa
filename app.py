@@ -113,15 +113,20 @@ def hitung_evaluasi_full(_X_scaled_tuple):
 def find_optimal_k(k_list, inertia_list):
     p1 = np.array([k_list[0], inertia_list[0]])
     p2 = np.array([k_list[-1], inertia_list[-1]])
-    
+
     distances = []
     for k, val in zip(k_list, inertia_list):
         p0 = np.array([k, val])
-        n = np.abs((p2[1] - p1[1]) * p0[0] - (p2[0] - p1[0]) * p0[1] + p2[0] * p1[1] - p2[1] * p1[0])
-        d = np.sqrt((p2[1] - p1[1])**2 + (p2[0] - p1[0])**2)
+        n = np.abs(
+            (p2[1] - p1[1]) * p0[0]
+            - (p2[0] - p1[0]) * p0[1]
+            + p2[0] * p1[1]
+            - p2[1] * p1[0]
+        )
+        d = np.sqrt((p2[1] - p1[1]) ** 2 + (p2[0] - p1[0]) ** 2)
         dist = n / d if d != 0 else 0
         distances.append(dist)
-        
+
     return k_list[np.argmax(distances)]
 
 
@@ -374,7 +379,7 @@ elif st.session_state["active_tab"] == "understanding":
                 "Total Program Studi",
                 f"{df_raw['Prodi'].nunique() if 'Prodi' in df_raw.columns else '-'} Prodi",
             )
-            
+
             if "Tahun_Tes" in df_raw.columns:
                 tahun_unik = sorted(df_raw["Tahun_Tes"].dropna().unique())
                 if len(tahun_unik) > 0:
@@ -383,7 +388,7 @@ elif st.session_state["active_tab"] == "understanding":
                     tahun_str = "-"
             else:
                 tahun_str = "-"
-            
+
             c4.metric("Cakupan Tahun Tes", tahun_str)
 
             st.markdown("<br>", unsafe_allow_html=True)
@@ -788,7 +793,9 @@ elif st.session_state["active_tab"] == "evaluasi":
             explained_variance = pca.explained_variance_ratio_[0] * 100
 
             with st.spinner("Memuat perhitungan evaluasi model..."):
-                inertia, K_range, sil_scores_dict, df_eval_summary = hitung_evaluasi_full(tuple(map(tuple, X_scaled)))
+                inertia, K_range, sil_scores_dict, df_eval_summary = hitung_evaluasi_full(
+                    tuple(map(tuple, X_scaled))
+                )
 
             optimal_k = 3
             perbandingan_k = [2, 3, 4]
@@ -799,12 +806,17 @@ elif st.session_state["active_tab"] == "evaluasi":
                 f"K = {optimal_k} (Kandidat: 2, 3, 4)",
             )
             m2.metric("Explained Variance (PCA - PC1)", f"{explained_variance:.2f}%")
-            m3.metric("Silhouette Score (K terpilih)", f"{sil_scores_dict[optimal_k]['score']:.2f}")
+            m3.metric(
+                "Silhouette Score (K terpilih)",
+                f"{sil_scores_dict[optimal_k]['score']:.2f}",
+            )
 
             st.markdown("<br>", unsafe_allow_html=True)
 
             st.subheader("Tabel Perbandingan Rata-Rata Silhouette Score (K = 2, 3, 4)")
-            st.markdown("Sesuai prosedur analisis, pengujian dilakukan pada titik optimal hasil Elbow serta nilai sebelum dan sesudahnya untuk mencari kualitas klaster terbaik:")
+            st.markdown(
+                "Sesuai prosedur analisis, pengujian dilakukan pada titik optimal hasil Elbow serta nilai sebelum dan sesudahnya untuk mencari kualitas klaster terbaik:"
+            )
             st.dataframe(df_eval_summary, use_container_width=True, hide_index=True)
 
             st.markdown("<br>", unsafe_allow_html=True)
@@ -853,7 +865,9 @@ elif st.session_state["active_tab"] == "evaluasi":
 
             st.markdown("<br>", unsafe_allow_html=True)
             st.subheader("Perbandingan Silhouette Plot untuk Kandidat Nilai K (K = 2, 3, 4)")
-            st.markdown("Berikut adalah sebaran Silhouette Plot untuk mengevaluasi kualitas pemisahan klaster pada $K = 2$, $K = 3$, dan $K = 4$:")
+            st.markdown(
+                "Berikut adalah sebaran Silhouette Plot secara berdampingan untuk mengevaluasi kualitas pemisahan klaster pada $K = 2$, $K = 3$, dan $K = 4$:"
+            )
 
             col_s1, col_s2, col_s3 = st.columns(3)
             cols_list = [col_s1, col_s2, col_s3]
@@ -895,11 +909,13 @@ elif st.session_state["active_tab"] == "evaluasi":
                 )
                 ax.set_xlabel("Silhouette Coefficient", fontsize=9)
                 ax.set_ylabel("Cluster Label", fontsize=9)
-                ax.set_title(f"Silhouette Plot untuk K = {k_val}", fontsize=10, fontweight="bold")
+                ax.set_title(
+                    f"Silhouette Plot untuk K = {k_val}", fontsize=10, fontweight="bold"
+                )
                 ax.legend(loc="upper right", fontsize=8)
                 ax.set_facecolor("#F8FAFC")
                 fig.patch.set_facecolor("#FFFFFF")
-                
+
                 with cols_list[idx]:
                     st.pyplot(fig)
 
@@ -983,11 +999,11 @@ elif st.session_state["active_tab"] == "clustering":
 
             st.markdown("---")
             st.subheader("Daftar Mahasiswa Berdasarkan Filter Tier")
-            
+
             list_opsi_tier = ["Semua Tier"] + [f"Tier {i+1}" for i in range(optimal_k)]
             pilih_filter_tier = st.selectbox(
                 "Filter Tabel Berdasarkan Kategori Tier:",
-                list_opsi_tier
+                list_opsi_tier,
             )
 
             if pilih_filter_tier == "Semua Tier":
@@ -995,7 +1011,9 @@ elif st.session_state["active_tab"] == "clustering":
             else:
                 df_tabel_tampil = df_clean[df_clean["Level_Tier"] == pilih_filter_tier]
 
-            st.markdown(f"Menampilkan **{len(df_tabel_tampil)} mahasiswa** untuk kategori: **{pilih_filter_tier}**")
+            st.markdown(
+                f"Menampilkan **{len(df_tabel_tampil)} mahasiswa** untuk kategori: **{pilih_filter_tier}**"
+            )
             st.dataframe(
                 df_tabel_tampil[kolom_identitas + kolom_fitur + ["PC1", "Level_Tier"]],
                 use_container_width=True,
@@ -1027,14 +1045,14 @@ elif st.session_state["active_tab"] == "clustering":
             )
 
 # ==========================================
-# HALAMAN 8: INTERPRETASI HASIL (REVISI ISTILAH & TAMBAHAN ANALISIS D3 VS D4 PER SUBTES)
+# HALAMAN 8: INTERPRETASI HASIL
 # ==========================================
 elif st.session_state["active_tab"] == "interpretasi":
     st.markdown(
         """
         <div class="page-header-box">
             <span class="folder-tag">TAHAP 08 • ANALISIS FREKUENSI, JENJANG D3/D4 & TAHUN TES</span>
-            <h2 class="section-heading">Interpretasi Hasil Klasterisasi</h2>
+            <h2 class="section-heading">Interpretasi Hasil Klasterisasi Berbasis Frekuensi & Sebaran Spesifik</h2>
             <p class="section-desc">Analisis profil mendalam menggunakan frekuensi subtes dengan capaian terendah, perbandingan performa subtes antara jenjang D3 dan D4, visualisasi proporsi, distribusi tahun tes, serta matriks kerentanan program studi.</p>
         </div>
         """,
@@ -1085,7 +1103,9 @@ elif st.session_state["active_tab"] == "interpretasi":
             # Deteksi Jenjang (D3 vs D4)
             if "Prodi" in df_clean.columns:
                 df_clean["Jenjang"] = df_clean["Prodi"].apply(
-                    lambda x: "D3" if str(x).strip().upper().startswith("D3") else ("D4" if str(x).strip().upper().startswith("D4") else "Lainnya")
+                    lambda x: "D3"
+                    if str(x).strip().upper().startswith("D3")
+                    else ("D4" if str(x).strip().upper().startswith("D4") else "Lainnya")
                 )
             else:
                 df_clean["Jenjang"] = "Tidak Diketahui"
@@ -1102,15 +1122,23 @@ elif st.session_state["active_tab"] == "interpretasi":
 
             if not df_filtered_tier.empty:
                 total_mhs_tier = len(df_filtered_tier)
-                
+
                 freq_subtes = df_filtered_tier["Subtes_Terlemah_Mhs"].value_counts()
-                subtes_paling_sering_rendah = freq_subtes.idxmax() if not freq_subtes.empty else "-"
-                jumlah_rendah_tertinggi = freq_subtes.max() if not freq_subtes.empty else 0
+                subtes_paling_sering_rendah = (
+                    freq_subtes.idxmax() if not freq_subtes.empty else "-"
+                )
+                jumlah_rendah_tertinggi = (
+                    freq_subtes.max() if not freq_subtes.empty else 0
+                )
                 pct_rendah_tertinggi = (jumlah_rendah_tertinggi / total_mhs_tier) * 100
 
                 prodi_terbanyak = df_filtered_tier["Prodi"].value_counts()
-                prodi_paling_rentan = prodi_terbanyak.idxmax() if not prodi_terbanyak.empty else "-"
-                jml_prodi_rentan = prodi_terbanyak.max() if not prodi_terbanyak.empty else 0
+                prodi_paling_rentan = (
+                    prodi_terbanyak.idxmax() if not prodi_terbanyak.empty else "-"
+                )
+                jml_prodi_rentan = (
+                    prodi_terbanyak.max() if not prodi_terbanyak.empty else 0
+                )
 
                 min_total = df_filtered_tier["Total"].min()
                 max_total = df_filtered_tier["Total"].max()
@@ -1133,14 +1161,16 @@ elif st.session_state["active_tab"] == "interpretasi":
 
                 st.markdown("<br>", unsafe_allow_html=True)
 
-                # BARIS GRAFIK 1: FREKUENSI SUBTES & TOP 5 PRODI TERBANYAK
+                # BARIS GRAFIK 1: FREKUENSI SUBTES TERENDAH & DISTRIBUSI TAHUN TES
                 col_f1, col_f2 = st.columns(2)
-                
+
                 with col_f1:
-                    st.subheader(f"Frekuensi Subtes dengan Capaian Terendah di {pilih_tier_tampil}")
+                    st.subheader(
+                        f"Frekuensi Subtes dengan Capaian Terendah di {pilih_tier_tampil}"
+                    )
                     df_freq_chart = freq_subtes.reset_index()
                     df_freq_chart.columns = ["Subtes TOEFL", "Jumlah Mahasiswa"]
-                    
+
                     fig_freq = px.bar(
                         df_freq_chart,
                         x="Subtes TOEFL",
@@ -1150,71 +1180,27 @@ elif st.session_state["active_tab"] == "interpretasi":
                         color_discrete_map={
                             "Section 1": "#10C35D",
                             "Section 2": "#3A86FF",
-                            "Section 3": "#FF8A4C"
+                            "Section 3": "#FF8A4C",
                         },
-                        height=350
+                        height=360,
                     )
-                    fig_freq.update_traces(textposition='outside')
+                    fig_freq.update_traces(textposition="outside")
                     fig_freq.update_layout(
                         paper_bgcolor="#FFFFFF",
                         plot_bgcolor="#F8FAFC",
                         font=dict(color="#0A3D2E"),
-                        showlegend=False
+                        showlegend=False,
                     )
                     st.plotly_chart(fig_freq, use_container_width=True)
 
                 with col_f2:
-                    st.subheader(f"Top 5 Program Studi Penyumbang di {pilih_tier_tampil}")
-                    df_prodi_top = prodi_terbanyak.head(5).reset_index()
-                    df_prodi_top.columns = ["Program Studi", "Jumlah Mahasiswa"]
-                    
-                    fig_prodi = px.bar(
-                        df_prodi_top,
-                        x="Jumlah Mahasiswa",
-                        y="Program Studi",
-                        orientation="h",
-                        text="Jumlah Mahasiswa",
-                        color_discrete_sequence=["#B197FC"],
-                        height=350
+                    st.subheader(
+                        f"Distribusi Tahun Pelaksanaan Tes di {pilih_tier_tampil}"
                     )
-                    fig_prodi.update_traces(textposition='outside')
-                    fig_prodi.update_layout(
-                        yaxis=dict(autorange="reversed"),
-                        paper_bgcolor="#FFFFFF",
-                        plot_bgcolor="#F8FAFC",
-                        font=dict(color="#0A3D2E"),
-                    )
-                    st.plotly_chart(fig_prodi, use_container_width=True)
-
-                st.markdown("---")
-
-                # BARIS GRAFIK 2: VISUALISASI JENJANG (D3 vs D4) & DISTRIBUSI TAHUN TES
-                col_v1, col_v2 = st.columns(2)
-
-                with col_v1:
-                    st.subheader(f"Proporsi Jenjang Pendidikan (D3 vs D4) di {pilih_tier_tampil}")
-                    df_jenjang_chart = df_filtered_tier["Jenjang"].value_counts().reset_index()
-                    df_jenjang_chart.columns = ["Jenjang", "Jumlah Mahasiswa"]
-
-                    fig_jenjang = px.pie(
-                        df_jenjang_chart,
-                        names="Jenjang",
-                        values="Jumlah Mahasiswa",
-                        hole=0.4,
-                        color_discrete_sequence=["#3B82F6", "#10C35D", "#FF8A4C"],
-                        height=350
-                    )
-                    fig_jenjang.update_layout(
-                        paper_bgcolor="#FFFFFF",
-                        plot_bgcolor="#F8FAFC",
-                        font=dict(color="#0A3D2E"),
-                    )
-                    st.plotly_chart(fig_jenjang, use_container_width=True)
-
-                with col_v2:
-                    st.subheader(f"Distribusi Tahun Pelaksanaan Tes di {pilih_tier_tampil}")
                     if "Tahun_Tes" in df_filtered_tier.columns:
-                        df_tahun_chart = df_filtered_tier["Tahun_Tes"].value_counts().reset_index()
+                        df_tahun_chart = (
+                            df_filtered_tier["Tahun_Tes"].value_counts().reset_index()
+                        )
                         df_tahun_chart.columns = ["Tahun Tes", "Jumlah Mahasiswa"]
                         df_tahun_chart = df_tahun_chart.sort_values("Tahun Tes")
 
@@ -1224,9 +1210,9 @@ elif st.session_state["active_tab"] == "interpretasi":
                             y="Jumlah Mahasiswa",
                             text="Jumlah Mahasiswa",
                             color_discrete_sequence=["#FFA94D"],
-                            height=350
+                            height=360,
                         )
-                        fig_tahun.update_traces(textposition='outside')
+                        fig_tahun.update_traces(textposition="outside")
                         fig_tahun.update_layout(
                             xaxis=dict(type="category"),
                             paper_bgcolor="#FFFFFF",
@@ -1237,81 +1223,166 @@ elif st.session_state["active_tab"] == "interpretasi":
 
                 st.markdown("---")
 
-                # BARIS TAMBAHAN BARU: PERBANDINGAN RATA-RATA SUBTES ANTARA D3 DAN D4
-                st.subheader(f"Perbandingan Rata-Rata Subtes Antara Jenjang D3 dan D4 di {pilih_tier_tampil}")
-                st.markdown("Menampilkan perbandingan capaian skor rata-rata pada setiap modul subtes secara khusus dikelompokkan berdasarkan jenjang pendidikan:")
+                # BARIS GRAFIK 2: PROPORSI JENJANG (D3 vs D4) & PERBANDINGAN RATA-RATA SUBTES D3 VS D4
+                col_v1, col_v2 = st.columns(2)
 
-                if "Jenjang" in df_filtered_tier.columns:
-                    df_d3_d4_subtes = df_filtered_tier.groupby("Jenjang")[["Section 1", "Section 2", "Section 3", "Total"]].mean().reset_index()
-                    df_d3_d4_melted = df_d3_d4_subtes.melt(id_vars="Jenjang", value_vars=["Section 1", "Section 2", "Section 3"], var_name="Subtes", value_name="Skor Rata-Rata")
-
-                    fig_comp = px.bar(
-                        df_d3_d4_melted,
-                        x="Subtes",
-                        y="Skor Rata-Rata",
-                        color="Jenjang",
-                        barmode="group",
-                        text="Skor Rata-Rata",
-                        color_discrete_map={"D3": "#3B82F6", "D4": "#10C35D"},
-                        height=400
+                with col_v1:
+                    st.subheader(
+                        f"Proporsi Jenjang Pendidikan (D3 vs D4) di {pilih_tier_tampil}"
                     )
-                    fig_comp.update_traces(texttemplate='%{text:.1f}', textposition='outside')
-                    fig_comp.update_layout(
+                    df_jenjang_chart = (
+                        df_filtered_tier["Jenjang"].value_counts().reset_index()
+                    )
+                    df_jenjang_chart.columns = ["Jenjang", "Jumlah Mahasiswa"]
+
+                    fig_jenjang = px.pie(
+                        df_jenjang_chart,
+                        names="Jenjang",
+                        values="Jumlah Mahasiswa",
+                        hole=0.4,
+                        color_discrete_sequence=["#3B82F6", "#10C35D", "#FF8A4C"],
+                        height=380,
+                    )
+                    fig_jenjang.update_layout(
                         paper_bgcolor="#FFFFFF",
                         plot_bgcolor="#F8FAFC",
                         font=dict(color="#0A3D2E"),
                     )
-                    st.plotly_chart(fig_comp, use_container_width=True)
+                    st.plotly_chart(fig_jenjang, use_container_width=True)
+
+                with col_v2:
+                    st.subheader(
+                        f"Perbandingan Rata-Rata Subtes D3 vs D4 di {pilih_tier_tampil}"
+                    )
+                    if "Jenjang" in df_filtered_tier.columns:
+                        df_d3_d4_subtes = (
+                            df_filtered_tier.groupby("Jenjang")[
+                                ["Section 1", "Section 2", "Section 3", "Total"]
+                            ]
+                            .mean()
+                            .reset_index()
+                        )
+                        df_d3_d4_melted = df_d3_d4_subtes.melt(
+                            id_vars="Jenjang",
+                            value_vars=["Section 1", "Section 2", "Section 3"],
+                            var_name="Subtes",
+                            value_name="Skor Rata-Rata",
+                        )
+
+                        fig_comp = px.bar(
+                            df_d3_d4_melted,
+                            x="Subtes",
+                            y="Skor Rata-Rata",
+                            color="Jenjang",
+                            barmode="group",
+                            text="Skor Rata-Rata",
+                            color_discrete_map={"D3": "#3B82F6", "D4": "#10C35D"},
+                            height=380,
+                        )
+                        fig_comp.update_traces(
+                            texttemplate="%{text:.1f}", textposition="outside"
+                        )
+                        fig_comp.update_layout(
+                            paper_bgcolor="#FFFFFF",
+                            plot_bgcolor="#F8FAFC",
+                            font=dict(color="#0A3D2E"),
+                        )
+                        st.plotly_chart(fig_comp, use_container_width=True)
 
                 st.markdown("---")
-                st.subheader(f"Analisis Kerentanan Subtes Top 5 Program Studi di {pilih_tier_tampil}")
-                st.markdown("Perbandingan frekuensi subtes dengan capaian terendah pada 5 program studi penyumbang terbanyak di tier ini:")
+
+                # BARIS GRAFIK 3: TOP 5 PRODI PENYUMBANG & ANALISIS KERENTANAN SUBTES TOP 5 PRODI
+                st.subheader(
+                    f"Ringkasan & Kerentanan Subtes Top 5 Program Studi di {pilih_tier_tampil}"
+                )
+                st.markdown(
+                    "Bandingkan jumlah penyumbang terbanyak di sisi kiri dengan rincian frekuensi subtes capaian terendah pada 5 program studi yang sama di sisi kanan:"
+                )
 
                 if "Prodi" in df_filtered_tier.columns:
+                    top_prodi_tier = (
+                        df_filtered_tier["Prodi"].value_counts().head(5).index
+                    )
+                    df_prodi_top = (
+                        prodi_terbanyak.loc[top_prodi_tier].reset_index()
+                    )
+                    df_prodi_top.columns = ["Program Studi", "Jumlah Mahasiswa"]
+
                     df_validasi_prodi = (
                         df_filtered_tier.groupby(["Prodi", "Subtes_Terlemah_Mhs"])
                         .size()
                         .reset_index(name="Jumlah_Mahasiswa")
                     )
-
-                    top_prodi_tier = (
-                        df_filtered_tier["Prodi"].value_counts().head(5).index
-                    )
                     df_validasi_top = df_validasi_prodi[
                         df_validasi_prodi["Prodi"].isin(top_prodi_tier)
                     ]
 
-                    fig_val_prodi = px.bar(
-                        df_validasi_top,
-                        x="Jumlah_Mahasiswa",
-                        y="Prodi",
-                        color="Subtes_Terlemah_Mhs",
-                        barmode="group",
-                        orientation="h",
-                        text="Jumlah_Mahasiswa",
-                        category_orders={"Prodi": list(top_prodi_tier)},
-                        color_discrete_map={
-                            "Section 1": "#10C35D",
-                            "Section 2": "#3A86FF",
-                            "Section 3": "#FF8A4C",
-                        },
-                        labels={
-                            "Jumlah_Mahasiswa": "Jumlah Mahasiswa",
-                            "Prodi": "Program Studi",
-                            "Subtes_Terlemah_Mhs": "Subtes Capaian Terendah",
-                        },
-                        height=420,
-                    )
-                    fig_val_prodi.update_traces(textposition="outside")
-                    fig_val_prodi.update_layout(
-                        paper_bgcolor="#FFFFFF",
-                        plot_bgcolor="#F8FAFC",
-                        font=dict(color="#0A3D2E"),
-                    )
-                    st.plotly_chart(fig_val_prodi, use_container_width=True)
+                    col_p5_1, col_p5_2 = st.columns(2)
+
+                    with col_p5_1:
+                        st.markdown(
+                            f"**Top 5 Program Studi Penyumbang ({pilih_tier_tampil})**"
+                        )
+                        fig_prodi = px.bar(
+                            df_prodi_top,
+                            x="Jumlah Mahasiswa",
+                            y="Program Studi",
+                            orientation="h",
+                            text="Jumlah Mahasiswa",
+                            category_orders={"Program Studi": list(top_prodi_tier)},
+                            color_discrete_sequence=["#B197FC"],
+                            height=440,
+                        )
+                        fig_prodi.update_traces(textposition="outside")
+                        fig_prodi.update_layout(
+                            yaxis=dict(autorange="reversed"),
+                            paper_bgcolor="#FFFFFF",
+                            plot_bgcolor="#F8FAFC",
+                            font=dict(color="#0A3D2E"),
+                        )
+                        st.plotly_chart(fig_prodi, use_container_width=True)
+
+                    with col_p5_2:
+                        st.markdown(
+                            f"**Kerentanan Subtes Top 5 Prodi ({pilih_tier_tampil})**"
+                        )
+                        fig_val_prodi = px.bar(
+                            df_validasi_top,
+                            x="Jumlah_Mahasiswa",
+                            y="Prodi",
+                            color="Subtes_Terlemah_Mhs",
+                            barmode="group",
+                            orientation="h",
+                            text="Jumlah_Mahasiswa",
+                            category_orders={"Prodi": list(top_prodi_tier)},
+                            color_discrete_map={
+                                "Section 1": "#10C35D",
+                                "Section 2": "#3A86FF",
+                                "Section 3": "#FF8A4C",
+                            },
+                            labels={
+                                "Jumlah_Mahasiswa": "Jumlah Mahasiswa",
+                                "Prodi": "Program Studi",
+                                "Subtes_Terlemah_Mhs": "Subtes Capaian Terendah",
+                            },
+                            height=440,
+                        )
+                        fig_val_prodi.update_traces(textposition="outside")
+                        fig_val_prodi.update_layout(
+                            yaxis=dict(autorange="reversed"),
+                            paper_bgcolor="#FFFFFF",
+                            plot_bgcolor="#F8FAFC",
+                            font=dict(color="#0A3D2E"),
+                        )
+                        st.plotly_chart(fig_val_prodi, use_container_width=True)
 
                 st.subheader(f"Daftar Mahasiswa Anggota {pilih_tier_tampil} (Tabel Detail)")
                 st.dataframe(
-                    df_filtered_tier[kolom_identitas + ["Jenjang"] + kolom_fitur + ["Subtes_Terlemah_Mhs", "PC1", "Level_Tier"]],
+                    df_filtered_tier[
+                        kolom_identitas
+                        + ["Jenjang"]
+                        + kolom_fitur
+                        + ["Subtes_Terlemah_Mhs", "PC1", "Level_Tier"]
+                    ],
                     use_container_width=True,
                 )
